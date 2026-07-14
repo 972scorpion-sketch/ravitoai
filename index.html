@@ -2,79 +2,73 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111827">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RavitoAI">
   <title>RavitoAI</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <span class="badge">MVP</span>
-      <h1>RavitoAI</h1>
-      <p>Calcule une première stratégie de glucides et d’hydratation selon ta course.</p>
+      <div>
+        <span class="badge">BÊTA PRIVÉE</span>
+        <h1>RavitoAI</h1>
+        <p>Ton plan de ravitaillement personnalisé pour la course à pied.</p>
+      </div>
+      <button id="theme-toggle" class="icon-button" type="button" aria-label="Changer de thème">◐</button>
     </header>
 
-    <section class="card">
-      <form id="strategy-form">
-        <div class="grid">
-          <label>
-            Distance
-            <select id="distance" required>
-              <option value="10">10 km</option>
-              <option value="20">20 km</option>
-              <option value="21.1">Semi-marathon</option>
-              <option value="42.195">Marathon</option>
-              <option value="custom">Autre</option>
-            </select>
-          </label>
+    <nav class="tabs" aria-label="Navigation principale">
+      <button class="tab active" data-tab="calculator" type="button">Calculateur</button>
+      <button class="tab" data-tab="history" type="button">Historique</button>
+      <button class="tab" data-tab="coach" type="button">Coach IA</button>
+    </nav>
 
-          <label id="custom-distance-wrap" class="hidden">
-            Distance personnalisée (km)
-            <input id="custom-distance" type="number" min="1" max="200" step="0.1" value="30">
-          </label>
-
-          <label>
-            Temps estimé
-            <div class="time-fields">
-              <input id="hours" type="number" min="0" max="24" value="0" aria-label="Heures">
-              <span>h</span>
-              <input id="minutes" type="number" min="0" max="59" value="42" aria-label="Minutes">
-              <span>min</span>
-            </div>
-          </label>
-
-          <label>
-            Température prévue
-            <input id="temperature" type="number" min="-10" max="50" value="18">
-          </label>
-
-          <label>
-            Transpiration
-            <select id="sweat-rate">
-              <option value="low">Faible</option>
-              <option value="normal" selected>Normale</option>
-              <option value="high">Importante</option>
-            </select>
-          </label>
-
-          <label>
-            Sensibilité digestive
-            <select id="digestion">
-              <option value="sensitive">Sensible</option>
-              <option value="normal" selected>Normale</option>
-              <option value="trained">Entraînée</option>
-            </select>
-          </label>
+    <section id="calculator" class="tab-panel active">
+      <section class="card intro-card">
+        <div>
+          <p class="eyebrow">NOUVELLE STRATÉGIE</p>
+          <h2>Prépare ta prochaine course</h2>
         </div>
+        <span class="status-dot">Moteur prêt</span>
+      </section>
 
-        <button type="submit">Générer ma stratégie</button>
-      </form>
+      <section class="card">
+        <form id="strategy-form">
+          <div class="grid">
+            <label>Nom de la course<input id="race-name" type="text" placeholder="20 km de Paris"></label>
+            <label>Distance<select id="distance" required><option value="10">10 km</option><option value="20" selected>20 km</option><option value="21.1">Semi-marathon</option><option value="42.195">Marathon</option><option value="custom">Autre</option></select></label>
+            <label id="custom-distance-wrap" class="hidden">Distance personnalisée (km)<input id="custom-distance" type="number" min="1" max="200" step="0.1" value="30"></label>
+            <label>Temps estimé<div class="time-fields"><input id="hours" type="number" min="0" max="24" value="1" aria-label="Heures"><span>h</span><input id="minutes" type="number" min="0" max="59" value="28" aria-label="Minutes"><span>min</span></div></label>
+            <label>Température prévue (°C)<input id="temperature" type="number" min="-10" max="50" value="18"></label>
+            <label>Transpiration<select id="sweat-rate"><option value="low" selected>Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label>
+            <label>Sensibilité digestive<select id="digestion"><option value="sensitive">Sensible</option><option value="normal" selected>Normale</option><option value="trained">Entraînée</option></select></label>
+            <label>Produit principal<select id="product"><option value="25">Gel standard · 25 g</option><option value="40">Maurten Gel 100 · 25 g</option><option value="30">Compote sport · 20–30 g</option><option value="drink">Boisson énergétique</option></select></label>
+          </div>
+          <button class="primary" type="submit">Générer mon plan</button>
+        </form>
+      </section>
+
+      <section id="result" class="card result hidden" aria-live="polite"></section>
     </section>
 
-    <section id="result" class="card result hidden" aria-live="polite"></section>
-  </main>
+    <section id="history" class="tab-panel">
+      <section class="card"><div class="section-heading"><div><p class="eyebrow">MÉMOIRE LOCALE</p><h2>Mes stratégies</h2></div><button id="clear-history" class="secondary" type="button">Effacer</button></div><div id="history-list" class="history-list"></div></section>
+    </section>
 
+    <section id="coach" class="tab-panel">
+      <section class="card coach-card">
+        <p class="eyebrow">COACH IA — MODE TEST</p>
+        <h2>Analyse personnalisée</h2>
+        <p id="coach-message">Génère d’abord une stratégie. Le coach utilisera ton plan et ton historique local pour proposer un ajustement.</p>
+        <div class="notice">Cette première version utilise un moteur de règles local. La connexion à une vraie IA et à Strava viendra après validation du prototype.</div>
+      </section>
+    </section>
+  </main>
   <script src="app.js"></script>
 </body>
 </html>
