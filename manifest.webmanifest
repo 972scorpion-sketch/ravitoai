@@ -1,0 +1,11 @@
+{
+  "name": "RavitoAI",
+  "short_name": "RavitoAI",
+  "description": "Planificateur personnel de ravitaillement pour la course à pied",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#0f172a",
+  "lang": "fr",
+  "icons": []
+}
