@@ -15,59 +15,29 @@
   <main class="app-shell">
     <header class="hero"><div><span class="badge">BÊTA PRIVÉE</span><h1>RavitoAI</h1><p>Ton plan de ravitaillement personnalisé.</p></div><button id="theme-toggle" class="icon-button" type="button">◐</button></header>
     <nav class="tabs" aria-label="Navigation principale">
-      <button class="tab active" data-tab="calculator" type="button">Plan</button>
-      <button class="tab" data-tab="profile" type="button">Profil</button>
-      <button class="tab" data-tab="products" type="button">Produits</button>
-      <button class="tab" data-tab="history" type="button">Historique</button>
-      <button class="tab" data-tab="coach" type="button">Coach IA</button>
+      <button class="tab active" data-tab="calculator" type="button">Plan</button><button class="tab" data-tab="profile" type="button">Profil</button><button class="tab" data-tab="products" type="button">Produits</button><button class="tab" data-tab="history" type="button">Historique</button><button class="tab" data-tab="coach" type="button">Coach IA</button>
     </nav>
-
     <section id="calculator" class="tab-panel active">
       <section class="card intro-card"><div><p class="eyebrow">NOUVELLE STRATÉGIE</p><h2>Prépare ta prochaine course</h2></div><span id="profile-status" class="status-dot">Profil à compléter</span></section>
       <section class="card"><form id="strategy-form"><div class="grid">
-        <label>Nom de la course<input id="race-name" type="text" placeholder="20 km de Paris"></label>
-        <label>Distance<select id="distance"><option value="10">10 km</option><option value="20" selected>20 km</option><option value="21.1">Semi-marathon</option><option value="42.195">Marathon</option><option value="custom">Autre</option></select></label>
-        <label id="custom-distance-wrap" class="hidden">Distance personnalisée (km)<input id="custom-distance" type="number" min="1" max="200" step="0.1" value="30"></label>
-        <label>Temps estimé<div class="time-fields"><input id="hours" type="number" min="0" max="24" value="1"><span>h</span><input id="minutes" type="number" min="0" max="59" value="28"><span>min</span></div></label>
-        <label>Température prévue (°C)<input id="temperature" type="number" min="-10" max="50" value="18"></label>
-        <label>Transpiration<select id="sweat-rate"><option value="profile">Utiliser mon profil</option><option value="low">Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label>
-        <label>Sensibilité digestive<select id="digestion"><option value="profile">Utiliser mon profil</option><option value="sensitive">Sensible</option><option value="normal">Normale</option><option value="trained">Entraînée</option></select></label>
-        <label>Produit principal<select id="product"></select></label>
-      </div><button class="primary" type="submit">Générer mon plan</button></form></section>
-      <section id="result" class="card result hidden" aria-live="polite"></section>
+        <label>Nom de la course<input id="race-name" type="text" placeholder="20 km de Paris"></label><label>Distance<select id="distance"><option value="10">10 km</option><option value="20" selected>20 km</option><option value="21.1">Semi-marathon</option><option value="42.195">Marathon</option><option value="custom">Autre</option></select></label>
+        <label id="custom-distance-wrap" class="hidden">Distance personnalisée (km)<input id="custom-distance" type="number" min="1" max="200" step="0.1" value="30"></label><label>Temps estimé<div class="time-fields"><input id="hours" type="number" min="0" max="24" value="1"><span>h</span><input id="minutes" type="number" min="0" max="59" value="28"><span>min</span></div></label>
+        <label>Température prévue (°C)<input id="temperature" type="number" min="-10" max="50" value="18"></label><label>Transpiration<select id="sweat-rate"><option value="profile">Utiliser mon profil</option><option value="low">Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label>
+        <label>Sensibilité digestive<select id="digestion"><option value="profile">Utiliser mon profil</option><option value="sensitive">Sensible</option><option value="normal">Normale</option><option value="trained">Entraînée</option></select></label><label>Produit principal<select id="product"></select></label>
+      </div><button class="primary" type="submit">Générer mon plan</button></form></section><section id="result" class="card result hidden" aria-live="polite"></section>
     </section>
-
-    <section id="profile" class="tab-panel">
-      <section class="card"><p class="eyebrow">MON PROFIL</p><h2>Personnalisation du calcul</h2><form id="profile-form"><div class="grid profile-grid">
-        <label>Prénom<input id="profile-name" type="text" placeholder="Astrid"></label>
-        <label>Poids (kg)<input id="profile-weight" type="number" min="35" max="180" step="0.1" value="72.6"></label>
-        <label>Année de naissance<input id="profile-birth-year" type="number" min="1940" max="2010" placeholder="1980"></label>
-        <label>Niveau<select id="profile-level"><option value="beginner">Débutant</option><option value="regular" selected>Régulier</option><option value="advanced">Confirmé</option></select></label>
-        <label>Transpiration habituelle<select id="profile-sweat"><option value="low" selected>Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label>
-        <label>Tolérance digestive<select id="profile-digestion"><option value="sensitive">Sensible</option><option value="normal" selected>Normale</option><option value="trained">Entraînée</option></select></label>
-        <label>Objectif glucides maximal<select id="profile-carb-max"><option value="45">45 g/h</option><option value="60" selected>60 g/h</option><option value="75">75 g/h</option><option value="90">90 g/h</option></select></label>
-        <label>Notes<input id="profile-notes" type="text" placeholder="Ex. Maurten peu ressenti sur 10 km"></label>
-      </div><button class="primary" type="submit">Enregistrer mon profil</button></form><p id="profile-saved" class="success hidden">Profil enregistré sur cet appareil.</p></section>
-    </section>
-
+    <section id="profile" class="tab-panel"><section class="card"><p class="eyebrow">MON PROFIL</p><h2>Personnalisation du calcul</h2><form id="profile-form"><div class="grid profile-grid">
+      <label>Prénom<input id="profile-name" type="text" placeholder="Astrid"></label><label>Poids (kg)<input id="profile-weight" type="number" min="35" max="180" step="0.1" value="72.6"></label><label>Année de naissance<input id="profile-birth-year" type="number" min="1940" max="2010" placeholder="1980"></label><label>Niveau<select id="profile-level"><option value="beginner">Débutant</option><option value="regular" selected>Régulier</option><option value="advanced">Confirmé</option></select></label><label>Transpiration habituelle<select id="profile-sweat"><option value="low" selected>Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label><label>Tolérance digestive<select id="profile-digestion"><option value="sensitive">Sensible</option><option value="normal" selected>Normale</option><option value="trained">Entraînée</option></select></label><label>Objectif glucides maximal<select id="profile-carb-max"><option value="45">45 g/h</option><option value="60" selected>60 g/h</option><option value="75">75 g/h</option><option value="90">90 g/h</option></select></label><label>Notes<input id="profile-notes" type="text" placeholder="Ex. Maurten peu ressenti sur 10 km"></label>
+    </div><button class="primary" type="submit">Enregistrer mon profil</button></form><p id="profile-saved" class="success hidden">Profil enregistré sur cet appareil.</p></section></section>
     <section id="products" class="tab-panel">
-      <section class="card"><div class="section-heading"><div><p class="eyebrow">CATALOGUE LOCAL</p><h2>Mes produits</h2></div><span id="product-count" class="status-dot"></span></div>
-        <div class="filters"><input id="product-search" type="search" placeholder="Rechercher Maurten, Overstim's…"><select id="product-filter"><option value="all">Tous les types</option><option value="gel">Gels</option><option value="drink">Boissons</option><option value="compote">Compotes</option><option value="solid">Solides</option></select></div>
-        <div id="product-list" class="product-list"></div>
+      <section class="card"><div class="section-heading"><div><p class="eyebrow">CATALOGUE & INVENTAIRE</p><h2>Mes produits</h2></div><span id="product-count" class="status-dot"></span></div>
+        <div class="filters inventory-filters"><select id="brand-filter"><option value="all">Toutes les marques</option></select><select id="model-filter"><option value="all">Tous les modèles</option></select><select id="stock-filter"><option value="all">Tous les statuts</option><option value="stock">En stock</option><option value="planned">Prévu d’acheter</option><option value="none">Non possédé</option></select><select id="product-filter"><option value="all">Tous les types</option><option value="gel">Gels</option><option value="drink">Boissons</option><option value="compote">Compotes</option><option value="solid">Solides</option></select><input id="product-search" type="search" placeholder="Rechercher un produit…"></div>
+        <div id="inventory-suggestion" class="suggestion-box"></div><div id="product-list" class="product-list"></div>
       </section>
-      <section class="card"><p class="eyebrow">AJOUT PERSONNEL</p><h2>Ajouter un produit</h2><form id="product-form"><div class="grid">
-        <label>Marque<input id="new-brand" required placeholder="Overstim's"></label><label>Nom<input id="new-name" required placeholder="Gel Énergix"></label>
-        <label>Type<select id="new-type"><option value="gel">Gel</option><option value="drink">Boisson</option><option value="compote">Compote</option><option value="solid">Solide</option></select></label>
-        <label>Glucides par portion (g)<input id="new-carbs" type="number" min="0" max="150" required value="25"></label>
-        <label>Sodium par portion (mg)<input id="new-sodium" type="number" min="0" max="2000" value="0"></label>
-        <label>Caféine (mg)<input id="new-caffeine" type="number" min="0" max="500" value="0"></label>
-      </div><button class="primary" type="submit">Ajouter au catalogue</button></form></section>
+      <section class="card"><p class="eyebrow">AJOUT PERSONNEL</p><h2>Ajouter un produit</h2><form id="product-form"><div class="grid"><label>Marque<input id="new-brand" required placeholder="Tä Energy"></label><label>Nom<input id="new-name" required placeholder="Energy Gummies"></label><label>Type<select id="new-type"><option value="gel">Gel</option><option value="drink">Boisson</option><option value="compote">Compote</option><option value="solid">Solide</option></select></label><label>Statut<select id="new-status"><option value="stock">En stock</option><option value="planned">Prévu d’acheter</option><option value="none">Non possédé</option></select></label><label>Glucides par portion (g)<input id="new-carbs" type="number" min="0" max="150" required value="25"></label><label>Sodium par portion (mg)<input id="new-sodium" type="number" min="0" max="2000" value="0"></label><label>Caféine (mg)<input id="new-caffeine" type="number" min="0" max="500" value="0"></label></div><button class="primary" type="submit">Ajouter au catalogue</button></form></section>
     </section>
-
     <section id="history" class="tab-panel"><section class="card"><div class="section-heading"><div><p class="eyebrow">MÉMOIRE LOCALE</p><h2>Mes stratégies</h2></div><button id="clear-history" class="secondary" type="button">Effacer</button></div><div id="history-list" class="history-list"></div></section></section>
-    <section id="coach" class="tab-panel"><section class="card coach-card"><p class="eyebrow">COACH IA — MODE TEST</p><h2>Analyse personnalisée</h2><p id="coach-message">Complète ton profil puis génère une stratégie.</p><div class="notice">Le coach exploite actuellement ton profil, ton catalogue et ton historique local. La vraie IA connectée viendra dans une étape suivante.</div></section></section>
+    <section id="coach" class="tab-panel"><section class="card coach-card"><p class="eyebrow">COACH IA — MODE TEST</p><h2>Analyse personnalisée</h2><p id="coach-message">Complète ton profil puis génère une stratégie.</p><div class="notice">Le coach exploite ton profil, ton inventaire et ton historique local.</div></section></section>
   </main>
-  <script src="ta-products.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+  <script src="catalog-v2.js"></script><script src="app.js"></script><script src="inventory.js"></script>
+</body></html>
