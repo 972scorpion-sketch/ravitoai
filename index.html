@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RavitoAI">
   <title>RavitoAI</title>
-  <link rel="manifest" href="manifest.webmanifest?v=7">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="manifest" href="manifest.webmanifest?v=8">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
   <main class="app-shell">
-    <header class="hero"><div><span class="badge">BÊTA PRIVÉE · V0.2</span><h1>RavitoAI</h1><p>Ton plan de ravitaillement personnalisé.</p></div><button id="theme-toggle" class="icon-button" type="button">◐</button></header>
+    <header class="hero"><div><span class="badge">BÊTA PRIVÉE · V0.3 FONCTIONS</span><h1>RavitoAI</h1><p>Ton plan de ravitaillement personnalisé.</p></div><button id="theme-toggle" class="icon-button" type="button">◐</button></header>
     <nav class="tabs" aria-label="Navigation principale">
       <button class="tab active" data-tab="calculator" type="button">Plan</button><button class="tab" data-tab="profile" type="button">Profil</button><button class="tab" data-tab="products" type="button">Catalogue</button><button class="tab" data-tab="history" type="button">Historique</button><button class="tab" data-tab="coach" type="button">Coach IA</button>
     </nav>
@@ -27,7 +27,7 @@
       </div><button class="primary" type="submit">Générer mon plan</button></form></section><section id="result" class="card result hidden" aria-live="polite"></section>
     </section>
     <section id="profile" class="tab-panel"><section class="card"><p class="eyebrow">MON PROFIL</p><h2>Personnalisation du calcul</h2><form id="profile-form"><div class="grid profile-grid">
-      <label>Prénom<input id="profile-name" type="text" placeholder="Astrid"></label><label>Poids (kg)<input id="profile-weight" type="number" min="35" max="180" step="0.1" value="72.6"></label><label>Année de naissance<input id="profile-birth-year" type="number" min="1940" max="2010" placeholder="1980"></label><label>Niveau<select id="profile-level"><option value="beginner">Débutant</option><option value="regular" selected>Régulier</option><option value="advanced">Confirmé</option></select></label><label>Transpiration habituelle<select id="profile-sweat"><option value="low" selected>Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label><label>Tolérance digestive<select id="profile-digestion"><option value="sensitive">Sensible</option><option value="normal" selected>Normale</option><option value="trained">Entraînée</option></select></label><label>Objectif glucides maximal<select id="profile-carb-max"><option value="45">45 g/h</option><option value="60" selected>60 g/h</option><option value="75">75 g/h</option><option value="90">90 g/h</option></select></label><label>Notes<input id="profile-notes" type="text" placeholder="Ex. Maurten peu ressenti sur 10 km"></label>
+      <label>Prénom<input id="profile-name" type="text" placeholder="Astrid"></label><label>Poids (kg)<input id="profile-weight" type="number" min="35" max="180" step="0.1" value="72.6"></label><label>Année de naissance<input id="profile-birth-year" type="number" min="1940" max="2010" placeholder="1980"></label><label>Niveau<select id="profile-level"><option value="beginner">Débutant</option><option value="regular" selected>Régulier</option><option value="advanced">Confirmé</option></select></label><label>Transpiration habituelle<select id="profile-sweat"><option value="low" selected>Faible</option><option value="normal">Normale</option><option value="high">Importante</option></select></label><label>Tolérance digestive<select id="profile-digestion"><option value="sensitive">Sensible</option><option value="normal" selected>Normale</option><option value="trained">Entraînée</option></select></label><label>Plafond glucides déjà testé<select id="profile-carb-max"><option value="45">45 g/h</option><option value="60" selected>60 g/h</option><option value="75">75 g/h</option><option value="90">90 g/h</option></select><small>Ce plafond évite que le simulateur conseille plus que ce que ton système digestif a déjà toléré à l’entraînement.</small></label><label>Notes<input id="profile-notes" type="text" placeholder="Ex. Maurten peu ressenti sur 10 km"></label>
     </div><button class="primary" type="submit">Enregistrer mon profil</button></form><p id="profile-saved" class="success hidden">Profil enregistré sur cet appareil.</p></section></section>
     <section id="products" class="tab-panel">
       <section class="card"><div class="section-heading"><div><p class="eyebrow">BASE DE PRODUITS VENDUS EN FRANCE</p><h2>Catalogue France</h2><p class="summary">Recherche un produit du marché français, puis indique s’il est en stock, prévu d’achat ou non possédé.</p></div><span id="product-count" class="status-dot"></span></div>
@@ -39,5 +39,5 @@
     <section id="history" class="tab-panel"><section class="card"><div class="section-heading"><div><p class="eyebrow">MÉMOIRE LOCALE</p><h2>Mes stratégies</h2></div><button id="clear-history" class="secondary" type="button">Effacer</button></div><div id="history-list" class="history-list"></div></section></section>
     <section id="coach" class="tab-panel"><section class="card coach-card"><p class="eyebrow">COACH IA — MODE TEST</p><h2>Analyse personnalisée</h2><p id="coach-message">Complète ton profil puis génère une stratégie.</p><div class="notice">Le coach exploite ton profil, ton inventaire et ton historique local.</div></section></section>
   </main>
-  <script src="catalog-v2.js?v=7"></script><script src="app.js?v=7"></script><script src="inventory.js?v=7"></script><script src="auto-plan.js?v=7"></script>
+  <script src="catalog-v2.js?v=8"></script><script src="app.js?v=8"></script><script src="inventory.js?v=8"></script><script src="auto-plan.js?v=8"></script><script src="features-v3.js?v=8"></script>
 </body></html>
