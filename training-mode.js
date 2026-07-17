@@ -1,81 +1,57 @@
 (()=>{
-  const $=s=>document.querySelector(s);
-  const form=$('#strategy-form');
-  if(!form||$('#activity-kind'))return;
+  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+  const form=$('#strategy-form'); if(!form||$('#activity-kind'))return;
   const grid=form.querySelector('.grid');
   grid.insertAdjacentHTML('afterbegin',`
-    <label>Type de plan
-      <select id="activity-kind">
-        <option value="race" selected>Course / compétition</option>
-        <option value="training">Entraînement</option>
-      </select>
-    </label>
-    <label id="training-type-wrap" class="hidden">Type d’entraînement
-      <select id="training-type">
-        <option value="easy">Endurance fondamentale / allure confortable</option>
-        <option value="long">Sortie longue en endurance</option>
-        <option value="tempo">Tempo / seuil / allure soutenue</option>
-        <option value="interval">Fractionné / VMA / allure très rapide</option>
-        <option value="racepace">Blocs à allure course</option>
-      </select>
-    </label>
-    <label id="intensity-wrap" class="hidden">Intensité globale
-      <select id="training-intensity">
-        <option value="low">Facile</option>
-        <option value="moderate" selected>Modérée</option>
-        <option value="high">Élevée</option>
-      </select>
-    </label>
-    <label id="work-duration-wrap" class="hidden">Temps réellement soutenu (min)
-      <input id="work-duration" type="number" min="0" max="300" step="5" value="30">
-      <small>Exemple : 6 × 5 min = 30 min rapides, même si la séance dure 1 h 15.</small>
-    </label>`);
-
-  const kind=$('#activity-kind'), trainingWrap=$('#training-type-wrap'), intensityWrap=$('#intensity-wrap'), workWrap=$('#work-duration-wrap');
-  function toggle(){
-    const training=kind.value==='training';
-    trainingWrap.classList.toggle('hidden',!training);
-    intensityWrap.classList.toggle('hidden',!training);
-    workWrap.classList.toggle('hidden',!training);
-    const nameLabel=$('#race-name')?.closest('label');
-    if(nameLabel){nameLabel.firstChild.textContent=training?'Nom de la séance':'Nom de la course';$('#race-name').placeholder=training?'Sortie longue avec 3 × 15 min':'20 km de Paris';}
-    const title=document.querySelector('#calculator .intro-card h2');
-    if(title)title.textContent=training?'Prépare ta prochaine séance':'Prépare ta prochaine course';
+    <label>Type de plan<select id="activity-kind"><option value="race" selected>Course / compétition</option><option value="training">Entraînement</option></select></label>
+    <label id="training-type-wrap" class="hidden">Type de séance<select id="training-type"><option value="easy">Course facile</option><option value="long-easy">Sortie longue facile</option><option value="progressive">Sortie longue progressive</option><option value="tempo">Tempo / seuil</option><option value="interval">Fractionné / VMA</option><option value="racepace">Allure course</option><option value="free">Séance libre</option></select></label>`);
+  const builder=document.createElement('section'); builder.id='training-builder'; builder.className='training-builder hidden';
+  builder.innerHTML=`<div class="section-heading"><div><p class="eyebrow">STRUCTURE DE LA SÉANCE</p><h3>Construis les blocs prévus</h3><p class="summary">Renseigne la distance ou la durée et l’allure de chaque partie.</p></div><button id="add-training-block" class="secondary" type="button">+ Ajouter un bloc</button></div><div id="training-blocks"></div><div id="training-summary" class="suggestion-box"></div>`;
+  form.querySelector('.grid').insertAdjacentElement('afterend',builder);
+  const kind=$('#activity-kind'),type=$('#training-type'),blocks=$('#training-blocks'),summary=$('#training-summary');
+  const presets={
+    easy:[['distance',9,'conversationnelle']],
+    'long-easy':[['distance',13,'conversationnelle']],
+    progressive:[['distance',3,'conversationnelle'],['distance',4,'4:35'],['distance',4,'4:15'],['distance',2,'conversationnelle']],
+    tempo:[['time',15,'conversationnelle'],['time',30,'4:20'],['time',10,'conversationnelle']],
+    interval:[['time',15,'conversationnelle'],['time',20,'rapide'],['time',15,'conversationnelle']],
+    racepace:[['distance',3,'conversationnelle'],['distance',6,'4:25'],['distance',2,'conversationnelle']],
+    free:[['distance',5,'conversationnelle']]
+  };
+  function row(mode='distance',amount=1,pace='conversationnelle'){
+    const el=document.createElement('div'); el.className='training-block';
+    el.innerHTML=`<select class="block-mode"><option value="distance" ${mode==='distance'?'selected':''}>Distance</option><option value="time" ${mode==='time'?'selected':''}>Durée</option></select><input class="block-amount" type="number" min="0.1" step="0.1" value="${amount}"><span class="block-unit">${mode==='distance'?'km':'min'}</span><input class="block-pace" value="${pace}" placeholder="5:40 ou conversationnelle"><button class="secondary remove-block" type="button">Supprimer</button>`;
+    blocks.appendChild(el); bindRow(el); updateSummary();
   }
-  kind.addEventListener('change',toggle);toggle();
-
-  form.addEventListener('submit',()=>setTimeout(()=>{
+  function bindRow(el){
+    el.querySelector('.block-mode').onchange=e=>{el.querySelector('.block-unit').textContent=e.target.value==='distance'?'km':'min';updateSummary()};
+    el.querySelectorAll('input').forEach(i=>i.oninput=updateSummary);
+    el.querySelector('.remove-block').onclick=()=>{el.remove();updateSummary()};
+  }
+  function loadPreset(){blocks.innerHTML='';(presets[type.value]||presets.free).forEach(x=>row(...x));}
+  function parsePace(v){const m=String(v).match(/(\d+)[\s:'’′h]+(\d{1,2})/);return m?Number(m[1])+Number(m[2])/60:null}
+  function readBlocks(){return $$('.training-block').map((el,i)=>({index:i+1,mode:el.querySelector('.block-mode').value,amount:Number(el.querySelector('.block-amount').value)||0,pace:el.querySelector('.block-pace').value.trim()||'libre'})).filter(x=>x.amount>0)}
+  function totals(){let km=0,min=0,fast=0;readBlocks().forEach(b=>{const pace=parsePace(b.pace);if(b.mode==='distance'){km+=b.amount;if(pace)min+=b.amount*pace}else{min+=b.amount;if(pace)km+=b.amount/pace}if(pace&&pace<5)fast+=b.mode==='time'?b.amount:b.amount*pace});return{km,min,fast}}
+  function updateSummary(){const t=totals();summary.innerHTML=`<strong>Séance estimée</strong><span>${t.km?t.km.toFixed(1)+' km':''}${t.km&&t.min?' · ':''}${t.min?Math.round(t.min)+' min':''}${t.fast?' · environ '+Math.round(t.fast)+' min soutenues':''}</span>`}
+  function toggle(){const training=kind.value==='training';$('#training-type-wrap').classList.toggle('hidden',!training);builder.classList.toggle('hidden',!training);const name=$('#race-name'),label=name?.closest('label');if(label){label.childNodes[0].nodeValue=training?'Nom de la séance':'Nom de la course';name.placeholder=training?'Sortie longue progressive de 13 km':'20 km de Paris'}const title=$('#calculator .intro-card h2');if(title)title.textContent=training?'Prépare ta prochaine séance':'Prépare ta prochaine course';if(training&&!blocks.children.length)loadPreset()}
+  kind.onchange=toggle; type.onchange=loadPreset; $('#add-training-block').onclick=()=>row(); toggle();
+  form.addEventListener('submit',e=>{
     if(kind.value!=='training')return;
-    const result=$('#result');if(!result||result.classList.contains('hidden'))return;
-    const type=$('#training-type').value,intensity=$('#training-intensity').value,work=Number($('#work-duration').value)||0;
-    const duration=Number($('#hours').value)*60+Number($('#minutes').value);
-    const labels={easy:'Endurance fondamentale',long:'Sortie longue',tempo:'Tempo / seuil',interval:'Fractionné / VMA',racepace:'Blocs à allure course'};
-    let carbTarget=0,pre='Repas habituel 2 à 3 h avant. Aucune surcharge glucidique nécessaire.',during='Eau selon la soif.';
-    if(type==='easy'){
-      carbTarget=duration<90?0:25;
-      during=duration<75?'Eau facultative selon météo et soif.':'Petites gorgées régulières ; glucides optionnels si la séance dépasse 1 h 30.';
-    }else if(type==='long'){
-      carbTarget=duration<75?20:duration<120?35:50;
-      pre='Petit-déjeuner ou collation digeste 2 à 3 h avant. Cette séance peut servir à tester la stratégie de course.';
-      during='Commencer les glucides après 25 à 35 min, puis toutes les 25 à 35 min selon le produit.';
-    }else if(type==='tempo'||type==='racepace'){
-      carbTarget=duration<60?20:duration<100?35:45;
-      pre='Collation glucidique légère 60 à 120 min avant si le dernier repas est éloigné.';
-      during=duration<60?'Pas de prise obligatoire pendant ; eau en petites gorgées.':'Première prise vers 25 à 30 min, puis toutes les 30 à 35 min.';
-    }else{
-      carbTarget=duration<75?0:25;
-      pre='Collation digeste 60 à 90 min avant. Évite un gel juste avant si les répétitions sont très courtes et la séance dure moins d’une heure.';
-      during=duration<75?'Eau entre les répétitions ; pas de gel obligatoire.':'Un apport de 20 à 25 g peut être utile après l’échauffement ou à mi-séance.';
-    }
-    if(intensity==='high'&&duration>=75)carbTarget+=10;
-    const effortNote=type==='interval'&&work?`La séance comporte environ ${work} min réellement rapides : la stratégie dépend surtout de la durée totale, mais la digestion peut être plus difficile pendant les fractions.`:'';
-    const block=document.createElement('section');block.className='training-advice';block.innerHTML=`
-      <p class="eyebrow">MODE ENTRAÎNEMENT</p>
-      <h3>${labels[type]} · intensité ${intensity==='low'?'facile':intensity==='high'?'élevée':'modérée'}</h3>
-      <div class="check-row"><div><strong>Objectif glucidique indicatif</strong><span>Adapté à la séance, pas à une compétition</span></div><div><strong>${carbTarget?carbTarget+' g/h':'aucun apport obligatoire'}</strong><span>${duration} min au total</span></div></div>
-      <div class="timeline"><div class="timeline-item"><strong>Avant</strong><p>${pre}</p></div><div class="timeline-item"><strong>Pendant</strong><p>${during}</p></div><div class="timeline-item"><strong>Après</strong><p>Dans l’heure suivante : eau, repas ou collation contenant glucides et protéines, surtout après tempo, fractionné ou sortie longue.</p></div></div>
-      ${effortNote?`<div class="notice">${effortNote}</div>`:''}`;
-    result.prepend(block);
-    const heading=result.querySelector('h2');if(heading&&!heading.textContent.includes('Entraînement'))heading.insertAdjacentText('beforebegin','');
-  },180));
+    e.preventDefault();e.stopImmediatePropagation();
+    const b=readBlocks(),t=totals(),duration=Math.max(1,Math.round(t.min||Number($('#hours').value)*60+Number($('#minutes').value))),temp=Number($('#temperature').value)||18;
+    const profile=JSON.parse(localStorage.getItem('ravitoai-profile-v1')||'{}'),products=JSON.parse(localStorage.getItem('ravitoai-products-v1')||'[]');
+    const stock=products.filter(p=>p.status==='stock'&&(p.quantity==null||p.quantity>0)),planned=products.filter(p=>p.status==='planned');
+    let carb=0;if(type.value==='long-easy')carb=duration>=90?30:duration>=70?20:0;if(type.value==='progressive')carb=duration>=70?35:20;if(['tempo','racepace'].includes(type.value))carb=duration>=60?30:15;if(type.value==='interval')carb=duration>=75?25:0;if(type.value==='easy')carb=duration>=90?20:0;if(profile.carbMax)carb=Math.min(carb,Number(profile.carbMax));
+    let water=(profile.sweat==='low'?300:profile.sweat==='high'?650:475)+(temp>=25?150:0);water=Math.max(250,Math.round(water/25)*25);
+    const need=Math.round(carb*duration/60),pick=list=>list.filter(p=>!['breakfast'].includes(p.type)).sort((a,b)=>Number(b.favorite)-Number(a.favorite))[0];
+    const stockPick=pick(stock),planPick=pick(planned);const portions=p=>p&&need?Math.max(1,Math.ceil(need/(Number(p.carbs)||25))):0;
+    const label={easy:'Course facile','long-easy':'Sortie longue facile',progressive:'Sortie longue progressive',tempo:'Tempo / seuil',interval:'Fractionné / VMA',racepace:'Allure course',free:'Séance libre'}[type.value];
+    const blockHtml=b.map(x=>`<div class="timeline-item"><strong>Bloc ${x.index}</strong><p>${x.amount} ${x.mode==='distance'?'km':'min'} · ${x.pace}</p></div>`).join('');
+    const suggest=(title,p)=>p?`<div class="suggestion-box"><strong>${title}</strong><span>${p.brand} ${p.name} · ${portions(p)||'aucune'} portion(s) nécessaire(s) selon l’objectif de ${need} g.</span></div>`:`<div class="suggestion-box"><strong>${title}</strong><span>Aucun produit correspondant renseigné.</span></div>`;
+    let pre='Repas habituel 2 à 3 h avant.';if(['progressive','tempo','interval','racepace'].includes(type.value))pre='Collation glucidique digeste 60 à 120 min avant si le dernier repas est éloigné.';if(type.value==='long-easy')pre='Petit-déjeuner habituel 2 à 3 h avant ; cette séance peut servir à tester la stratégie de course.';
+    const during=carb?`Viser environ ${carb} g/h. Première prise vers 30 à 40 min, puis toutes les 30 à 35 min. Boire par petites gorgées toutes les 10 à 15 min.`:`Aucun apport glucidique obligatoire. Eau selon la soif et la météo.`;
+    $('#result').innerHTML=`<p class="eyebrow">PLAN ENTRAÎNEMENT</p><h2>${$('#race-name').value.trim()||label}</h2><p class="summary">${label} · ${t.km.toFixed(1)} km · ${duration} min</p><div class="metrics"><div class="metric"><span>Glucides</span><strong>${carb?carb+' g/h':'optionnels'}</strong><small>${need} g au total</small></div><div class="metric"><span>Hydratation</span><strong>${water} ml/h</strong><small>${Math.round(water*duration/60/50)*50} ml environ</small></div><div class="metric"><span>Temps soutenu</span><strong>${Math.round(t.fast)} min</strong><small>estimé via les allures</small></div></div><h3>Structure analysée</h3><div class="timeline">${blockHtml}</div><h3>Stratégie</h3><div class="timeline"><div class="timeline-item"><strong>Avant</strong><p>${pre}</p></div><div class="timeline-item"><strong>Pendant</strong><p>${during}</p></div><div class="timeline-item"><strong>Après</strong><p>Dans l’heure : eau, glucides et protéines, surtout après une séance progressive, tempo ou fractionnée.</p></div></div>${suggest('Suggestion avec mon stock',stockPick)}${suggest('Suggestion avec mes achats prévus',planPick)}<div class="notice">Le moteur utilise désormais les blocs et leurs allures. Une allure “conversationnelle” reste volontairement classée comme facile.</div>`;
+    $('#result').classList.remove('hidden');$('#result').scrollIntoView({behavior:'smooth'});
+    window.ravitoAutoPlan={carbRate:carb,waterRate:water,sodiumRate:0,caffeineTotal:0,totalPortions:portions(stockPick),duration};
+  },true);
 })();
