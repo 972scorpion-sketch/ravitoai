@@ -14,4 +14,5 @@
   catalogue.forEach(([id,brand,name,type,carbs,sodium,caffeine])=>{if(!byId.has(id))byId.set(id,{id,brand,name,type,carbs,sodium,caffeine,status:'none',quantity:0,favorite:false})});
   localStorage.setItem(key,JSON.stringify([...byId.values()]));
 })();
-import('./project-fixes.js?v=20').catch(()=>{});
+import('./project-fixes.js?v=21').catch(()=>{});
+import('./beta-v17.js?v=21').then(()=>import('./beta-v21.js?v=21')).catch(()=>{});
