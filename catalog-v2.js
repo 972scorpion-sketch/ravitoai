@@ -8,14 +8,10 @@
     ['baouw-puree','Baouw','Purée énergétique','compote',20,50,0],['baouw-gel','Baouw','Gel énergétique','gel',20,100,0],['baouw-bar','Baouw','Barre énergétique bio','solid',20,100,0],
     ['aptonia-gel','Aptonia','Gel Energy','gel',22,50,0],['aptonia-drink','Aptonia','Boisson isotonique','drink',30,300,0],['aptonia-chews','Aptonia','Gommes énergétiques','solid',30,50,0],
     ['powerbar-gel','PowerBar','PowerGel Original','gel',27,200,0],['powerbar-chews','PowerBar','PowerGel Shots','solid',45,200,0],['powerbar-drink','PowerBar','Isoactive','drink',29,250,0],
-    ['sis-gel','Science in Sport','GO Isotonic Energy Gel','gel',22,10,0],['sis-caf','Science in Sport','GO Energy + Caffeine Gel','gel',22,10,75],['sis-drink','Science in Sport','GO Electrolyte Powder','drink',36,300,0],
-    ['gu-gel','GU','Energy Gel','gel',23,55,0],['gu-roctane','GU','Roctane Energy Gel','gel',21,125,35],['clif-bloks','Clif','Bloks Energy Chews','solid',48,140,0],
-    ['pompot-sport','Pom’Potes Sport','Compote Endurance','compote',20,0,0],['meltonic-gel','Meltonic','Gel énergétique au miel','gel',23,50,0],['meltonic-bar','Meltonic','Barre énergétique','solid',25,80,0],
-    ['precision-gel30','Precision Fuel & Hydration','PF 30 Gel','gel',30,0,0],['precision-gel90','Precision Fuel & Hydration','PF 90 Flow Gel','gel',90,0,0],['precision-drink','Precision Fuel & Hydration','PH 1000 Electrolyte Drink','drink',0,1000,0]
-  ].map(([id,brand,name,type,carbs,sodium,caffeine])=>({id,brand,name,type,carbs,sodium,caffeine,favorite:false,status:'none'}));
+  ];
   let current=[];try{current=JSON.parse(localStorage.getItem(key))||[]}catch{}
   const byId=new Map(current.map(p=>[p.id,p]));
-  catalogue.forEach(p=>{if(!byId.has(p.id))current.push(p)});
-  current=current.map(p=>({...p,status:p.status||'none'}));
-  localStorage.setItem(key,JSON.stringify(current));
+  catalogue.forEach(([id,brand,name,type,carbs,sodium,caffeine])=>{if(!byId.has(id))byId.set(id,{id,brand,name,type,carbs,sodium,caffeine,status:'none',quantity:0,favorite:false})});
+  localStorage.setItem(key,JSON.stringify([...byId.values()]));
 })();
+import('./project-fixes.js?v=20').catch(()=>{});
