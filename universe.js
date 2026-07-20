@@ -2,7 +2,8 @@
   const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
   const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
   const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-  const KEYS={profile:'ravitoai-profile-v1',projects:'ravitoai-projects-v1',equipment:'ravitoai-equipment-v1',hydration:'ravitoai-hydration-v1'};
+  const KEYS={profile:'ravitoai-profile-v1',projects:'ravitoai-projects-v1',equipment:'ravitoai-equipment-v1',hydration:'ravitoai-hydration-v1',strava:'ravitoai-strava-v1',stravaActivities:'ravitoai-strava-activities-v1'};
+  const STRAVA_HUB='https://divine-grass-d74fravitoai-hub.972-scorpion.workers.dev';
 
   function resetFormListeners(selector){const old=$(selector);if(!old)return null;const fresh=old.cloneNode(true);old.replaceWith(fresh);return fresh}
   const projectForm=resetFormListeners('#project-form');
@@ -73,7 +74,47 @@
   }
   hydrationForm?.addEventListener('submit',e=>{e.preventDefault();const items=load(KEYS.hydration,[]),type=$('#hydration-type').value,capacity=Number($('#hydration-capacity').value),quantity=Number($('#hydration-quantity').value);const existing=items.find(i=>i.type===type&&Number(i.capacity)===capacity);if(existing)existing.quantity=Number(existing.quantity)+quantity;else items.push({id:String(Date.now()),type,capacity,quantity});save(KEYS.hydration,items);renderHydration()});
 
-  function addStravaCard(){const equipmentCardSection=$('#equipment-list')?.closest('.card');if(!equipmentCardSection||$('#strava-connect'))return;equipmentCardSection.insertAdjacentHTML('beforebegin',`<section class="card"><div class="section-heading"><div><p class="eyebrow">SYNCHRONISATION</p><h2>Strava</h2><p class="summary">Le premier test importera les activités récentes et préparera la mise à jour du kilométrage des chaussures.</p></div><span id="strava-status" class="status-dot">Non connecté</span></div><button id="strava-connect" class="primary" type="button">🔗 Connecter Strava</button><p id="strava-help" class="notice hidden"></p></section>`);$('#strava-connect').onclick=()=>{const help=$('#strava-help');help.classList.remove('hidden');help.innerHTML='<strong>Étape serveur requise.</strong> Le bouton est prêt côté application. La prochaine étape consiste à connecter le Client ID Strava au RavitoAI Hub, sans exposer le secret dans GitHub Pages.'}}
+  function normalizeName(value){return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  function splitShoeName(name){const words=String(name||'').trim().split(/\s+/);return{brand:words.shift()||'Strava',model:words.join(' ')||'Chaussure'}}
+  function mergeStravaShoes(stravaShoes){
+    const equipment=load(KEYS.equipment,[]);
+    stravaShoes.forEach(shoe=>{
+      const target=normalizeName(shoe.name);
+      let existing=equipment.find(item=>item.type==='shoe'&&(normalizeName(`${item.brand} ${item.model}`)===target||target.includes(normalizeName(`${item.brand} ${item.model}`))||normalizeName(`${item.brand} ${item.model}`).includes(target)));
+      if(existing){existing.km=Number(shoe.distanceKm)||0;existing.stravaGearId=shoe.id;existing.stravaSynced=true}
+      else{const parts=splitShoeName(shoe.name);equipment.push({id:`strava-${shoe.id}`,type:'shoe',brand:parts.brand,model:parts.model,km:Number(shoe.distanceKm)||0,stravaGearId:shoe.id,stravaSynced:true,...inferEquipment('shoe',parts.brand,parts.model)})}
+    });
+    save(KEYS.equipment,equipment);renderEquipment();
+  }
+  function showStravaMessage(html,type='notice'){
+    const help=$('#strava-help');if(!help)return;help.classList.remove('hidden');help.className=type;help.innerHTML=html;
+  }
+  function renderStravaState(state=load(KEYS.strava,{})){
+    const status=$('#strava-status'),button=$('#strava-connect');if(!status||!button)return;
+    if(state.connected){status.textContent='Connecté';button.textContent='🔄 Synchroniser maintenant';button.dataset.mode='sync';showStravaMessage(`<strong>${state.athleteName||'Compte Strava connecté'}</strong><br>${state.activityCount||0} activités importées · ${state.shoeCount||0} chaussures synchronisées${state.syncedAt?` · dernière synchro ${new Date(state.syncedAt).toLocaleString('fr-FR')}`:''}`,'notice')}
+    else{status.textContent='Non connecté';button.textContent='🔗 Connecter Strava';button.dataset.mode='login';showStravaMessage('Connecte ton compte Strava pour synchroniser automatiquement tes activités et le kilométrage de tes chaussures.','notice')}
+  }
+  async function syncStrava(){
+    const button=$('#strava-connect');if(button){button.disabled=true;button.textContent='Synchronisation…'}
+    try{
+      const response=await fetch(`${STRAVA_HUB}/strava/sync`,{headers:{Accept:'application/json'},cache:'no-store'});
+      const data=await response.json();
+      if(response.status===401||!data.connected){save(KEYS.strava,{connected:false});renderStravaState();window.location.href=data.loginUrl||`${STRAVA_HUB}/strava/login`;return}
+      if(!response.ok||!data.ok)throw new Error(data.error||'Synchronisation Strava impossible.');
+      mergeStravaShoes(data.shoes||[]);save(KEYS.stravaActivities,data.activities||[]);
+      const athleteName=[data.athlete?.firstname,data.athlete?.lastname].filter(Boolean).join(' ');
+      const state={connected:true,athleteName,athleteId:data.athlete?.id||null,activityCount:(data.activities||[]).length,shoeCount:(data.shoes||[]).length,syncedAt:data.syncedAt||new Date().toISOString()};save(KEYS.strava,state);renderStravaState(state);
+      const cleanUrl=new URL(window.location.href);cleanUrl.searchParams.delete('strava');history.replaceState({},'',cleanUrl.toString());
+    }catch(error){showStravaMessage(`<strong>Erreur Strava.</strong> ${error.message||'Réessaie dans quelques instants.'}`,'notice');renderStravaState(load(KEYS.strava,{}))}
+    finally{if(button)button.disabled=false}
+  }
+  function addStravaCard(){
+    const equipmentCardSection=$('#equipment-list')?.closest('.card');if(!equipmentCardSection||$('#strava-connect'))return;
+    equipmentCardSection.insertAdjacentHTML('beforebegin',`<section class="card"><div class="section-heading"><div><p class="eyebrow">SYNCHRONISATION</p><h2>Strava</h2><p class="summary">Synchronise automatiquement tes activités, tes chaussures et leurs kilomètres.</p></div><span id="strava-status" class="status-dot">Non connecté</span></div><button id="strava-connect" class="primary" type="button">🔗 Connecter Strava</button><p id="strava-help" class="notice"></p></section>`);
+    $('#strava-connect').onclick=()=>{const state=load(KEYS.strava,{});if(state.connected||$('#strava-connect').dataset.mode==='sync')syncStrava();else window.location.href=`${STRAVA_HUB}/strava/login`};
+    renderStravaState();
+    const callback=new URLSearchParams(window.location.search).get('strava');if(callback==='connected')syncStrava();else if(callback==='refused')showStravaMessage('<strong>Connexion refusée.</strong> Aucune donnée Strava n’a été importée.','notice');
+  }
 
   function updateHome(){const p=load(KEYS.profile,{}),projects=load(KEYS.projects,[]).filter(x=>daysUntil(x.date)>=0).sort((a,b)=>a.date.localeCompare(b.date)),main=projects.find(x=>x.priority==='A')||projects[0];if($('#home-greeting'))$('#home-greeting').textContent=`Bonjour${p.name?` ${p.name}`:''} 👋`;if($('#home-project'))$('#home-project').innerHTML=main?`<strong>${disciplineIcon[main.discipline]} ${main.name} · J-${daysUntil(main.date)}</strong><span>${main.discipline==='hyrox'?'Format Hyrox':`${main.distance} km${main.elevation?` · ${main.elevation} m D+`:''}`} · priorité ${main.priority}</span>`:'<strong>Aucun projet principal</strong><span>Ajoute ta prochaine compétition pour activer le suivi.</span>'}
 
