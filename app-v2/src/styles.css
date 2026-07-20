@@ -1,0 +1,57 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #eef4ff;
+  background: #07101d;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at top, #162744 0, #08111f 45%, #050a12 100%); }
+button { font: inherit; }
+
+.app-frame { width: min(1180px, 100%); margin: 0 auto; padding: 28px 24px 112px; }
+.topbar { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; margin-bottom: 28px; }
+.topbar h1 { margin: 10px 0 8px; font-size: clamp(2rem, 5vw, 4rem); line-height: .96; letter-spacing: -.045em; }
+.topbar p { margin: 0; max-width: 680px; color: #9cb0ca; font-size: 1rem; }
+.version-pill, .eyebrow { display: inline-flex; font-size: .72rem; letter-spacing: .12em; font-weight: 800; color: #76f0b2; }
+.avatar { width: 46px; height: 46px; border: 1px solid #29405f; border-radius: 16px; background: rgba(255,255,255,.06); color: white; display: grid; place-items: center; }
+.dashboard { display: grid; gap: 18px; }
+.hero-card, .panel, .metric-card { border: 1px solid rgba(155,184,222,.16); background: rgba(10, 23, 40, .76); backdrop-filter: blur(18px); box-shadow: 0 24px 80px rgba(0,0,0,.2); }
+.hero-card { padding: 26px; border-radius: 28px; display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+.hero-card h2 { margin: 8px 0; max-width: 700px; font-size: clamp(1.7rem, 3vw, 2.7rem); letter-spacing: -.035em; }
+.hero-card p, .placeholder p { color: #9cb0ca; max-width: 680px; }
+.primary, .secondary { border-radius: 14px; border: 0; padding: 12px 16px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.primary { background: #72edae; color: #07140d; }
+.secondary { background: #17263a; color: white; border: 1px solid #2b425f; }
+.secondary:disabled { opacity: .6; cursor: wait; }
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.metric-card { border-radius: 22px; padding: 20px; display: grid; gap: 5px; }
+.metric-card span, .metric-card small { color: #91a6c2; }
+.metric-card strong { font-size: 1.7rem; }
+.panel { border-radius: 26px; padding: 22px; }
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+.panel h3, .panel h2 { margin: 5px 0 0; }
+.activity-list { display: grid; gap: 10px; }
+.activity-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px; border-radius: 17px; background: rgba(255,255,255,.035); }
+.activity-row div:nth-child(2) { display: grid; gap: 3px; }
+.activity-row span { color: #8fa3bc; font-size: .86rem; }
+.activity-icon { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; background: rgba(114,237,174,.12); color: #72edae; }
+.empty-state, .status-message { color: #9cb0ca; }
+.placeholder { min-height: 320px; display: grid; align-content: center; justify-items: start; }
+.bottom-nav { position: fixed; z-index: 10; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(720px, calc(100% - 24px)); display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px; border: 1px solid rgba(152,181,218,.2); border-radius: 24px; background: rgba(5, 12, 22, .88); backdrop-filter: blur(22px); box-shadow: 0 24px 70px rgba(0,0,0,.45); }
+.bottom-nav button { border: 0; background: transparent; color: #7f94af; padding: 10px 6px; border-radius: 17px; display: grid; justify-items: center; gap: 5px; cursor: pointer; }
+.bottom-nav button span { font-size: .72rem; font-weight: 700; }
+.bottom-nav button.active { background: rgba(114,237,174,.12); color: #79f2b5; }
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 720px) {
+  .app-frame { padding: 20px 14px 106px; }
+  .topbar { margin-bottom: 20px; }
+  .avatar { display: none; }
+  .hero-card { align-items: stretch; flex-direction: column; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .panel-heading { align-items: stretch; flex-direction: column; }
+  .secondary { justify-content: center; }
+}
