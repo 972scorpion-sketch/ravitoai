@@ -1,11 +1,14 @@
 {
   "name": "RavitoAI",
   "short_name": "RavitoAI",
-  "description": "Planificateur personnel de ravitaillement pour la course à pied",
+  "description": "Votre copilote outdoor pour préparer chaque effort",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#07111f",
-  "theme_color": "#0f172a",
+  "background_color": "#080b0d",
+  "theme_color": "#080b0d",
   "lang": "fr",
-  "icons": []
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
 }
