@@ -8,7 +8,7 @@ import {
 import { Button } from './components/ui/button'
 
 type IconType = ComponentType<{ size?: number; weight?: 'regular' | 'fill' | 'duotone'; className?: string }>
-type Sport = 'running' | 'trail' | 'cycling' | 'hiking'
+type Sport = 'running' | 'trail' | 'cycling' | 'hiking' | 'hyrox'
 type PlanKind = 'race' | 'training'
 type PlannedOuting = { id: string; kind: PlanKind; date: string; time: string; sport: Sport; distance: number; duration: string; elevation: number; pace: string; location: string; title: string; goal: string; notes: string; warmup?: string; workout?: string; recovery?: string; cooldown?: string; intensity?: EffortIntensity; shoeId?: string; hydrationIds?: string[]; gearIds?: string[] }
 type OutingDraft = Omit<PlannedOuting, 'id'>
@@ -39,7 +39,7 @@ const createId = () => typeof globalThis.crypto?.randomUUID === 'function'
 const defaultProfile: AthleteProfile = { name: 'Scorpion', birthDate: '1990-01-01', weight: 70, height: 175, vo2Max: 0, sports: ['running', 'trail'], level: 'intermediate', goals: 'Progresser sur 20 km et préparer mes prochaines aventures.', foodPreferences: '', allergens: '', digestion: 'normal', sweat: 'average', caffeineLimit: 200, gear: [], hydration: [] }
 const seedOuting: PlannedOuting = { id: 'paris-20k', kind: 'race', date: '2026-10-05', time: '09:00', sport: 'running', distance: 20, duration: '01:32', elevation: 120, pace: '4:36', location: 'Paris', title: '20 km de Paris', goal: 'Finir en moins de 1h35', notes: '' }
 const emptyDraft = (): OutingDraft => ({ kind: 'training', date: new Date(Date.now() + 86400000).toISOString().slice(0, 10), time: '08:00', sport: 'running', distance: 10, duration: '01:00', elevation: 0, pace: '6:00', location: '', title: '', goal: '', notes: '', warmup: '15 min faciles', workout: '', recovery: '', cooldown: '10 min faciles', intensity: 'moderate', hydrationIds: [], gearIds: [] })
-const sportLabels: Record<Sport, string> = { running: 'Course', trail: 'Trail', cycling: 'Vélo', hiking: 'Randonnée' }
+const sportLabels: Record<Sport, string> = { running: 'Course', trail: 'Trail', cycling: 'Vélo', hiking: 'Randonnée', hyrox: 'Hyrox' }
 const weatherLabels: Record<Weather, string> = { clear: 'Ensoleillé', cloudy: 'Nuageux', rain: 'Pluie', humid: 'Chaud et humide' }
 const intensityLabels: Record<EffortIntensity, string> = { easy: 'Facile', moderate: 'Modérée', hard: 'Élevée' }
 const sweatLabels: Record<SweatRate, string> = { low: 'Faible', average: 'Moyenne', high: 'Importante' }
@@ -50,6 +50,11 @@ const distancePresets: Record<Sport, { value: number; label: string }[]> = {
   trail: [{ value: 15, label: 'Trail court (15 km)' }, { value: 25, label: 'Trail découverte (25 km)' }, { value: 50, label: 'Trail long (50 km)' }],
   cycling: [{ value: 40, label: 'Sortie courte (40 km)' }, { value: 80, label: 'Sortie endurance (80 km)' }, { value: 120, label: 'Longue distance (120 km)' }],
   hiking: [{ value: 10, label: 'Randonnée courte (10 km)' }, { value: 20, label: 'Randonnée journée (20 km)' }, { value: 30, label: 'Randonnée longue (30 km)' }],
+  hyrox: [{ value: 8, label: 'Hyrox standard (8 × 1 km + 8 ateliers)' }, { value: 2, label: 'Hyrox relais (2 × 1 km + 2 ateliers)' }],
+}
+const outingTitleExamples: Record<PlanKind, Record<Sport, string>> = {
+  race: { running: '10 km de Paris', trail: 'Trail du Ventoux', cycling: 'Cyclosportive des Alpes', hiking: 'Randonnée du Mont-Blanc', hyrox: 'HYROX Paris' },
+  training: { running: 'Fractionné 6 × 800 m', trail: 'Séance de côtes en trail', cycling: 'Sortie endurance vélo', hiking: 'Randonnée endurance', hyrox: 'Simulation HYROX complète' },
 }
 const seedProducts: FuelProduct[] = [
   { id: 'seed-gel', name: 'Gel Endurance', brand: 'Ravito Lab', category: 'gel', carbs: 25, sodium: 100, caffeine: 0, volume: 0, portion: '1 sachet de 40 g', allergens: '', quantity: 8, expiry: '2027-03-01', favorite: true, poorTolerance: false },
@@ -69,12 +74,13 @@ const outingDate = (outing: PlannedOuting) => new Date(`${outing.date}T${outing.
 const formatDate = (outing: PlannedOuting) => new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).format(outingDate(outing))
 const formatDuration = (duration: string) => { const [hours, minutes] = duration.split(':').map(Number); return hours ? `${hours}h${String(minutes).padStart(2, '0')}` : `${minutes} min` }
 const durationHours = (duration: string) => { const [hours = 0, minutes = 0] = duration.split(':').map(Number); return hours + minutes / 60 }
-const calculateCarbRate = (hours: number, intensity: EffortIntensity, digestion: DigestiveSensitivity) => {
+const calculateCarbRate = (hours: number, intensity: EffortIntensity, digestion: DigestiveSensitivity, sport?: Sport) => {
   let rate = 0
   if (hours >= .75 && hours <= 1.25 && intensity !== 'easy') rate = Math.round((10 / hours) / 5) * 5
   else if (hours > 1.25 && hours <= 2) rate = intensity === 'hard' ? 30 : intensity === 'moderate' ? 25 : 20
   else if (hours > 2 && hours <= 3) rate = intensity === 'hard' ? 60 : intensity === 'moderate' ? 45 : 30
   else if (hours > 3) rate = intensity === 'hard' ? 90 : intensity === 'moderate' ? 70 : 45
+  if (sport === 'hyrox' && hours > 1.25) rate = intensity === 'hard' ? 45 : 35
   return rate > 0 && digestion === 'sensitive' ? Math.max(5, rate - 5) : rate
 }
 const formatPace = (minutesPerKm: number) => { const safe = Math.max(0, minutesPerKm); let minutes = Math.floor(safe); let seconds = Math.round((safe - minutes) * 60); if (seconds === 60) { minutes += 1; seconds = 0 } return `${minutes}:${String(seconds).padStart(2, '0')}` }
@@ -92,7 +98,7 @@ const calculateEffortIndicator = (sport: Sport, distance: number, duration: stri
   return `${formatPace(hours * 60 / effortDistance)}/km en allure-effort · ${effortDistance.toFixed(1)} km-effort`
 }
 const formatWeek = (outing: PlannedOuting) => { const date = outingDate(outing); const monday = new Date(date); monday.setDate(date.getDate() - ((date.getDay() + 6) % 7)); return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' }).format(monday) }
-const normalizeOuting = (outing: Partial<PlannedOuting>): PlannedOuting => ({ ...seedOuting, ...outing, kind: outing.kind === 'training' ? 'training' : 'race', sport: ['running', 'trail', 'cycling', 'hiking'].includes(outing.sport ?? '') ? outing.sport as Sport : 'running', title: outing.title?.trim() || `${sportLabels[(outing.sport as Sport) || 'running']} · ${outing.location?.trim() || 'À définir'}`, goal: outing.goal ?? '', notes: outing.notes ?? '', hydrationIds: Array.isArray(outing.hydrationIds) ? outing.hydrationIds : [], gearIds: Array.isArray(outing.gearIds) ? outing.gearIds : [] })
+const normalizeOuting = (outing: Partial<PlannedOuting>): PlannedOuting => ({ ...seedOuting, ...outing, kind: outing.kind === 'training' ? 'training' : 'race', sport: ['running', 'trail', 'cycling', 'hiking', 'hyrox'].includes(outing.sport ?? '') ? outing.sport as Sport : 'running', title: outing.title?.trim() || `${sportLabels[(outing.sport as Sport) || 'running']} · ${outing.location?.trim() || 'À définir'}`, goal: outing.goal ?? '', notes: outing.notes ?? '', hydrationIds: Array.isArray(outing.hydrationIds) ? outing.hydrationIds : [], gearIds: Array.isArray(outing.gearIds) ? outing.gearIds : [] })
 
 function usePlannedOutings() {
   const [outings, setOutings] = useState<PlannedOuting[]>(() => {
@@ -223,13 +229,17 @@ function OutingForm({ initial, onSave }: { initial: PlannedOuting | null; onSave
   const [distanceChoice, setDistanceChoice] = useState(() => distancePresets[draft.sport].some(option => option.value === draft.distance) ? String(draft.distance) : 'other')
   const update = <K extends keyof OutingDraft>(key: K, value: OutingDraft[K]) => setDraft(current => ({ ...current, [key]: value }))
   const chooseDistance = (value: string) => { setDistanceChoice(value); if (value !== 'other') update('distance', Number(value)) }
-  const changeSport = (sport: Sport) => { const firstDistance = distancePresets[sport][0].value; setDistanceChoice(String(firstDistance)); setDraft(current => ({ ...current, sport, distance: firstDistance })) }
+  const changeSport = (sport: Sport) => { const firstDistance = distancePresets[sport][0].value; setDistanceChoice(String(firstDistance)); setDraft(current => ({ ...current, sport, distance: firstDistance, ...(sport === 'hyrox' ? { duration: '01:30', elevation: 0, intensity: 'hard' as EffortIntensity } : {}) })) }
   const automaticPace = calculateTargetPace(draft.sport, draft.distance, draft.duration)
   const effortIndicator = calculateEffortIndicator(draft.sport, draft.distance, draft.duration, draft.elevation)
   useEffect(() => {
     const elevationInput = Array.from(document.querySelectorAll<HTMLInputElement>('.outing-form input[type="number"]')).find(input => input.closest('label')?.textContent?.startsWith('Dénivelé positif'))
     elevationInput?.setAttribute('step', '1')
   }, [])
+  useEffect(() => {
+    const titleInput = Array.from(document.querySelectorAll<HTMLInputElement>('.outing-form input')).find(input => input.closest('label')?.textContent?.startsWith('Nom de la'))
+    titleInput?.setAttribute('placeholder', outingTitleExamples[draft.kind][draft.sport])
+  }, [draft.kind, draft.sport])
   useEffect(() => { if (draft.pace !== automaticPace) setDraft(current => ({ ...current, pace: automaticPace })) }, [automaticPace, draft.pace])
   const submit = (event: FormEvent) => { event.preventDefault(); onSave(draft) }
   const equipmentPicker = draft.kind === 'race' ? <label>Intensité prévue<select value={draft.intensity ?? 'hard'} onChange={event => update('intensity', event.target.value as EffortIntensity)}>{Object.entries(intensityLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label> : null
@@ -250,7 +260,7 @@ function NutritionEstimate({ outing, onAgenda, onNutrition }: { outing: PlannedO
   const totalHours = Math.max(.25, hours + minutes / 60)
   const shortEasy = outing.kind === 'training' && (outing.intensity ?? 'moderate') === 'easy' && totalHours <= 1
   const water = shortEasy ? 0 : Math.round(totalHours * 500 / 50) * 50
-  const carbs = Math.round(totalHours * calculateCarbRate(totalHours, outing.intensity ?? (outing.kind === 'race' ? 'hard' : 'moderate'), profile.digestion))
+  const carbs = Math.round(totalHours * calculateCarbRate(totalHours, outing.intensity ?? (outing.kind === 'race' ? 'hard' : 'moderate'), profile.digestion, outing.sport))
   const availableContainers = profile.hydration.flatMap(item => Array.from({ length: item.quantity }, () => item)).sort((a, b) => b.capacity - a.capacity)
   const suggestedContainers: HydrationItem[] = []
   let packedWater = 0
@@ -536,8 +546,8 @@ function NutritionPage() {
   const estimate = () => {
     const shortEasy = selected?.kind === 'training' && intensity === 'easy' && hours <= 1
     const hotOrSweaty = temperature >= 25 || weather === 'humid' || sweat === 'high'
-    let water = 500 + (temperature >= 25 ? 150 : temperature <= 8 ? -100 : 0) + (weather === 'humid' ? 150 : weather === 'rain' ? -50 : 0) + (sweat === 'high' ? 150 : sweat === 'low' ? -100 : 0)
-    let carbs = calculateCarbRate(hours, intensity, digestion)
+    let water = 500 + (temperature >= 25 ? 150 : temperature <= 8 ? -100 : 0) + (weather === 'humid' ? 150 : weather === 'rain' ? -50 : 0) + (sweat === 'high' ? 150 : sweat === 'low' ? -100 : 0) + (selected?.sport === 'hyrox' ? 100 : 0)
+    let carbs = calculateCarbRate(hours, intensity, digestion, selected?.sport)
     let sodium = sweat === 'high' ? 750 : sweat === 'low' ? 350 : 500
     if (temperature >= 25 || weather === 'humid') sodium += 150
     water = shortEasy && !hotOrSweaty ? 0 : Math.min(1100, Math.max(250, Math.round(water / 50) * 50))
@@ -561,6 +571,7 @@ function NutritionPage() {
     if (sodiumPerHour > 1200) items.push('Sodium très élevé : vérifie la valeur avant d’enregistrer.')
     if (selected && hours < .5 && selected.distance > 20) items.push('Distance et durée semblent incohérentes pour cette sortie.')
     if (selected?.kind === 'race' || intensity === 'hard') items.push('Avant · privilégie un repas familier 1 à 4 h avant. Pour un effort court et intense, la petite dose de glucides prévue peut être prise après l’échauffement.')
+    if (selected?.sport === 'hyrox') items.push('Hyrox · privilégie des prises rapides et faciles à digérer, avant le départ puis aux ravitaillements accessibles entre les blocs. Évite les aliments solides pendant les ateliers.')
     if ((selected?.kind === 'race' || intensity === 'hard') && caffeineProduct) items.push(`Caféine optionnelle · ${caffeineProduct.brand} ${caffeineProduct.name}, 1 portion (${caffeineProduct.caffeine} mg), uniquement si déjà testée et tolérée.`)
     else if ((selected?.kind === 'race' || intensity === 'hard') && caffeineTarget > 0) items.push('Caféine optionnelle · aucun produit compatible et suffisamment renseigné n’est disponible dans ton stock.')
     if (hours > 1 || intensity === 'hard') items.push('Récupération · prévois après la sortie un repas ou une collation familière associant glucides, protéines et boisson selon ta soif.')
